@@ -31,6 +31,7 @@ int s21_calc_complements(matrix_t *A, matrix_t *result);
 
 void mem_free(matrix_t *matrix);
 void print_mtrx(matrix_t *test_mtrx);
+int minor(int rows, int columns, matrix_t *matrix, matrix_t *result);
 
 // =========================================
 
@@ -48,7 +49,7 @@ int main() {
 
   for (int i = 0; i < rows; i++) {
     for (int j = 0; j < columns; j++) {
-      test_mtrx.matrix[i][j] = j-7;
+      test_mtrx.matrix[i][j] = j - 7;
     }
   }
 
@@ -67,12 +68,12 @@ int main() {
   // print_mtrx(&result);}
   // s21_transpose(&test_mtrx, &result);
   s21_calc_complements(&test_mtrx, &result);
+  minor(rows - 1, columns - 1, &test_mtrx, &result);
   print_mtrx(&result);
 
   printf("eq== %d\n", s21_eq_matrix(&test_mtrx, &test_mtrx_2));
 
   s21_remove_matrix(&test_mtrx);
-  printf("free: %f ", **test_mtrx.matrix);
 
   mem_free(&test_mtrx_2);
   mem_free(&result);
@@ -83,19 +84,37 @@ int main() {
 
 //=================================
 
-int s21_transpose(matrix_t *A, matrix_t *result){
-int error = 0;
+int s21_calc_complements(matrix_t *A, matrix_t *result) {}
+
+int minor(int rows, int columns, matrix_t *matrix, matrix_t *result) {
+  int error = 0;
+  if ((rows < matrix->rows) && (columns < matrix->columns)) {
+    s21_create_matrix(matrix->rows - 1, matrix->columns - 1, result);
+
+    for (int i = 0; i < matrix->rows; i++) {
+      for (int j = 0; j < matrix->columns; j++)
+        if ((i != rows) && (j != columns)) {
+          result->matrix[i][j] = matrix->matrix[i][j];
+        }
+    }
+  } else {
+    error =1;
+  }
+  return error;
+}
+
+int s21_transpose(matrix_t *A, matrix_t *result) {
+  int error = 0;
   s21_create_matrix(A->columns, A->rows, result);
 
-  for (int i = 0; i <result->rows; i++) {
+  for (int i = 0; i < result->rows; i++) {
     for (int j = 0; j < result->columns; j++) {
       result->matrix[i][j] = A->matrix[j][i];
     }
   }
-  
+
   // проработать возвращения ошибки
   return error;
-
 }
 
 int s21_mult_matrix(matrix_t *A, matrix_t *B, matrix_t *result) {
@@ -105,9 +124,8 @@ int s21_mult_matrix(matrix_t *A, matrix_t *B, matrix_t *result) {
   if ((A->columns == B->rows)) {
     for (int i = 0; i < A->rows; i++) {
       for (int j = 0; j < B->columns; j++) {
-        for (int k = 0; k <result->columns;k++){
-
-        result->matrix[i][j] += A->matrix[i][k] * B->matrix[k][j];
+        for (int k = 0; k < result->columns; k++) {
+          result->matrix[i][j] += A->matrix[i][k] * B->matrix[k][j];
         }
       }
     }
@@ -117,22 +135,19 @@ int s21_mult_matrix(matrix_t *A, matrix_t *B, matrix_t *result) {
 
   // проработать ошибки возвращения
   return error;
-
 }
 
-int s21_mult_number(matrix_t *A, double number, matrix_t *result){
+int s21_mult_number(matrix_t *A, double number, matrix_t *result) {
   int error = 0;
 
-    for (int i = 0; i < A->rows; i++) {
-      for (int j = 0; j < A->columns; j++) {
-        result->matrix[i][j] = A->matrix[i][j] * number;
-      }
+  for (int i = 0; i < A->rows; i++) {
+    for (int j = 0; j < A->columns; j++) {
+      result->matrix[i][j] = A->matrix[i][j] * number;
     }
-  
+  }
 
   // проработать ошибки возвращения
   return error;
-
 }
 
 int s21_sum_matrix(matrix_t *A, matrix_t *B, matrix_t *result) {
